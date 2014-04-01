@@ -8,7 +8,8 @@
                     'getPlayerState', 'getVolume', 'setVolume',
                     'loadVideoById', 'getAvailablePlaybackRates', 'playVideo',
                     'pauseVideo', 'seekTo', 'getDuration', 'setPlaybackRate',
-                    'getPlaybackQuality', 'destroy'
+                    'getAvailableQualityLevels', 'getPlaybackQuality',
+                    'setPlaybackQuality', 'destroy'
                 ]
             );
 
