@@ -1,11 +1,8 @@
-(function (requirejs, require, define) {
+(function (define, $, _, Time, Logger) {
+    'use strict';
 
-// VideoPlayer module.
-define(
-'video/03_video_player.js',
-['video/02_html5_video.js', 'video/00_resizer.js'],
-function (HTML5Video, Resizer) {
-    var dfd = $.Deferred(),
+    var HTML5Video, Resizer,
+        dfd = $.Deferred(),
         VideoPlayer = function (state) {
             state.videoPlayer = {};
             _makeFunctionsPublic(state);
@@ -42,8 +39,18 @@ function (HTML5Video, Resizer) {
 
     VideoPlayer.prototype = methodsDict;
 
-    // VideoPlayer() function - what this module "exports".
-    return VideoPlayer;
+    // VideoPlayer module.
+    define(
+        'video/03_video_player.js',
+        ['video/02_html5_video.js', 'video/00_resizer.js'],
+        function (_HTML5Video, _Resizer) {
+            HTML5Video = _HTML5Video;
+            Resizer = _Resizer;
+
+            // VideoPlayer() function - what this module "exports".
+            return VideoPlayer;
+        }
+    );
 
     // ***************************************************************
     // Private functions start here.
@@ -80,7 +87,7 @@ function (HTML5Video, Resizer) {
         });
 
         if (state.videoType === 'youtube') {
-            state.videoPlayer.PlayerState = YT.PlayerState;
+            state.videoPlayer.PlayerState = window.YT.PlayerState;
             state.videoPlayer.PlayerState.UNSTARTED = -1;
         } else { // if (state.videoType === 'html5') {
             state.videoPlayer.PlayerState = HTML5Video.PlayerState;
@@ -142,7 +149,7 @@ function (HTML5Video, Resizer) {
         } else { // if (state.videoType === 'youtube') {
             youTubeId = state.youtubeId();
 
-            state.videoPlayer.player = new YT.Player(state.id, {
+            state.videoPlayer.player = new window.YT.Player(state.id, {
                 playerVars: state.videoPlayer.playerVars,
                 videoId: youTubeId,
                 events: {
@@ -259,7 +266,7 @@ function (HTML5Video, Resizer) {
         delete state.videoPlayer.playerVars.html5;
 
         // Request for the creation of a new Flash player
-        state.videoPlayer.player = new YT.Player(state.id, {
+        state.videoPlayer.player = new window.YT.Player(state.id, {
             playerVars: state.videoPlayer.playerVars,
             videoId: state.youtubeId(),
             events: {
@@ -417,7 +424,10 @@ function (HTML5Video, Resizer) {
         // After the user seeks, the video will start playing from
         // the sought point, and stop playing at the end.
         this.videoPlayer.goToStartTime = false;
-        if (newTime > this.videoPlayer.endTime || this.videoPlayer.endTime === null) {
+        if (
+            newTime > this.videoPlayer.endTime ||
+            this.videoPlayer.endTime === null
+        ) {
             this.videoPlayer.stopAtEndTime = false;
         }
 
@@ -517,8 +527,7 @@ function (HTML5Video, Resizer) {
 
     function onReady() {
         var _this = this,
-            availablePlaybackRates, baseSpeedSubs,
-            player, videoWidth, videoHeight;
+            availablePlaybackRates, baseSpeedSubs;
 
         dfd.resolve();
 
@@ -542,13 +551,14 @@ function (HTML5Video, Resizer) {
             }
         );
 
-        // Because of a recent change in the YouTube API (not documented), sometimes
-        // HTML5 mode loads after Flash mode has been loaded. In this case we have
-        // multiple speeds available but the variable `this.currentPlayerMode` is
-        // set to "flash". This is impossible because in Flash mode we can have
-        // only one speed available. Therefore we must execute the following code
-        // block if we have multiple speeds or if `this.currentPlayerMode` is set to
-        // "html5". If any of the two conditions are true, we then set the variable
+        // Because of a recent change in the YouTube API (not documented),
+        // sometimes HTML5 mode loads after Flash mode has been loaded. In
+        // this case we have multiple speeds available but the variable
+        // `this.currentPlayerMode` is set to "flash". This is impossible
+        // because in Flash mode we can have only one speed available.
+        // Therefore we must execute the following code block if we have
+        // multiple speeds or if `this.currentPlayerMode` is set to "html5".
+        // If any of the two conditions are true, we then set the variable
         // `this.currentPlayerMode` to "html5".
         //
         // For more information, please see the PR that introduced this change:
@@ -578,7 +588,7 @@ function (HTML5Video, Resizer) {
                 // and their associated subs.
 
                 // First clear the dictionary.
-                $.each(this.videos, function (index, value) {
+                $.each(this.videos, function (index) {
                     delete _this.videos[index];
                 });
                 this.speeds = [];
@@ -638,7 +648,9 @@ function (HTML5Video, Resizer) {
                 this.videoPlayer.onEnded();
                 break;
             case this.videoPlayer.PlayerState.CUED:
-                this.videoPlayer.player.seekTo(this.videoPlayer.seekToTimeOnCued, true);
+                this.videoPlayer.player.seekTo(
+                    this.videoPlayer.seekToTimeOnCued, true
+                );
                 // We need to call play() explicitly because after the call
                 // to functions cueVideoById() followed by seekTo() the video
                 // is in a PAUSED state.
@@ -723,8 +735,8 @@ function (HTML5Video, Resizer) {
         if (duration > 0 && videoPlayer.goToStartTime) {
             videoPlayer.goToStartTime = false;
 
-            // The duration might have changed. Update the start-end time region to
-            // reflect this fact.
+            // The duration might have changed. Update the start-end time
+            // region to reflect this fact.
             this.trigger(
                 'videoProgressSlider.updateStartEndTimeRegion',
                 {
@@ -735,8 +747,8 @@ function (HTML5Video, Resizer) {
             time = videoPlayer.figureOutStartingTime(duration);
 
             // When the video finishes playing, we will start from the
-            // start-time, or from the beginning (rather than from the remembered
-            // position).
+            // start-time, or from the beginning (rather than from the
+            // remembered position).
             this.config.savedVideoPosition = 0;
 
             if (time > 0) {
@@ -828,9 +840,9 @@ function (HTML5Video, Resizer) {
         // Sometimes the YouTube API doesn't finish instantiating all of it's
         // methods, but the execution point arrives here.
         //
-        // This happens when you have start-time and end-time set, and click "Edit"
-        // in Studio, and then "Save". The Video editor dialog closes, the
-        // video reloads, but the start-end range is not visible.
+        // This happens when you have start-time and end-time set, and click
+        // "Edit" in Studio, and then "Save". The Video editor dialog closes,
+        // the video reloads, but the start-end range is not visible.
         if (this.videoPlayer.player.getDuration) {
             dur = this.videoPlayer.player.getDuration();
         }
@@ -890,6 +902,6 @@ function (HTML5Video, Resizer) {
         this.videoPlayer.player.setVolume(volume);
         this.el.trigger('volumechange', arguments);
     }
-});
-
-}(RequireJS.requirejs, RequireJS.require, RequireJS.define));
+}).call(this,
+    window.RequireJS.define, window.$, window._, window.Time, window.Logger
+);
