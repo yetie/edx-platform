@@ -341,3 +341,20 @@ Feature: LMS Video component
   #  Then I select the "1.25" speed
   #  And I click video button "pause"
   #  And I click on caption line "2", video module shows elapsed time "4"
+
+  # 29
+  @skip_firefox
+  Scenario: Quality button appears on play
+    Given the course has a Video component in "Youtube" mode
+    Then when I view the video I do not see video button "quality"
+    And I click video button "play"
+    Then I can see video button "quality"
+
+  # 30
+  @skip_firefox
+  Scenario: Quality button works correctly
+    Given the course has a Video component in "Youtube" mode
+    And I click video button "play"
+    And I see video button "quality" is "inactive"
+    And I click video button "quality"
+    Then I see video button "quality" is "active"

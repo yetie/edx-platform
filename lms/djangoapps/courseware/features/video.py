@@ -44,6 +44,7 @@ VIDEO_BUTTONS = {
     'pause': '.video_control.pause',
     'fullscreen': '.add-fullscreen',
     'download_transcript': '.video-tracks > a',
+    'quality': '.quality-control'
 }
 
 VIDEO_MENUS = {
@@ -629,3 +630,10 @@ def click_on_the_caption(_step, index, expected_time):
     find_caption_line_by_data_index(int(index)).click()
     actual_time = elapsed_time()
     assert int(expected_time) == actual_time
+
+@step('I see video button "([^"]*)" is ([^"]*)')
+def i_see_active(_step, button, is_active):
+    if is_active == 'active':
+        assert world.css_has_class(VIDEO_BUTTONS[button], 'active')
+    else:
+        assert not world.css_has_class(VIDEO_BUTTONS[button], 'active')
