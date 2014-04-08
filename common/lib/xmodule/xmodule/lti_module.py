@@ -230,9 +230,9 @@ class LTIModule(LTIFields, XModule):
                 param_name, param_value = [p.strip() for p in custom_parameter.split('=', 1)]
             except ValueError:
                 _ = self.runtime.service(self, "i18n").ugettext
-                msg = _('Could not parse custom parameter: {custom_parameter}. Should be "x=y" string.'.format(
+                msg = _('Could not parse custom parameter: {custom_parameter}. Should be "x=y" string.').format(
                     custom_parameter="{0!r}".format(custom_parameter)
-                ))
+                )
                 raise LTIError(msg)
 
             # LTI specs: 'custom_' should be prepended before each custom parameter, as pointed in link above.
@@ -637,9 +637,9 @@ oauth_consumer_key="", oauth_signature="frVp4JuvT1mVXlxktiAUjQ7%2F1cw%3D"'}
                 lti_id, key, secret = [i.strip() for i in lti_passport.split(':')]
             except ValueError:
                 _ = self.runtime.service(self, "i18n").ugettext
-                msg = _('Could not parse LTI passport: {lti_passport}. Should be "id:key:secret" string.'.format(
+                msg = _('Could not parse LTI passport: {lti_passport}. Should be "id:key:secret" string.').format(
                     lti_passport='{0!r}'.format(lti_passport)
-                ))
+                )
                 raise LTIError(msg)
 
             if lti_id == self.lti_id.strip():
